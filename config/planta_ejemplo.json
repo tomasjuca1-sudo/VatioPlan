@@ -1,0 +1,24 @@
+{
+  "nombre": "Planta de inyección de plásticos (ejemplo)",
+  "descripcion": "Planta mediana con 2 turnos operados (6–22 h) y cargas eléctricas que se pueden mover de horario.",
+  "potencia_maxima_kw": 700,
+  "exposicion_bolsa": 1.0,
+  "carga_base_kw": {"turno_operado": 450, "noche": 250, "inicio_turno": 6, "fin_turno": 22},
+  "cargas_flexibles": [
+    {"nombre": "Secado de resina (horno)", "potencia_kw": 120, "horas_dia": 4, "continua": true,
+     "horas_permitidas": [5, 20], "inicio_actual": 6,
+     "motivo_restriccion": "Requiere operario; debe terminar antes del fin del turno"},
+    {"nombre": "Molino de scrap", "potencia_kw": 75, "horas_dia": 5, "continua": false,
+     "horas_permitidas": [6, 21], "inicio_actual": 14,
+     "motivo_restriccion": "Requiere operario (solo en turno)"},
+    {"nombre": "Chiller con banco de hielo", "potencia_kw": 90, "horas_dia": 6, "continua": false,
+     "horas_permitidas": [0, 23], "inicio_actual": 12,
+     "motivo_restriccion": "Almacena frío: puede operar cualquier hora"},
+    {"nombre": "Bombeo a tanque elevado", "potencia_kw": 55, "horas_dia": 4, "continua": false,
+     "horas_permitidas": [0, 23], "inicio_actual": 8,
+     "motivo_restriccion": "El tanque da autonomía de 1 día"},
+    {"nombre": "Carga de montacargas", "potencia_kw": 30, "horas_dia": 6, "continua": false,
+     "horas_permitidas": [[0, 5], [18, 23]], "inicio_actual": 18,
+     "motivo_restriccion": "Solo cuando los montacargas no están en uso"}
+  ]
+}

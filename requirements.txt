@@ -1,0 +1,11 @@
+pandas>=2.1
+numpy
+scikit-learn>=1.3
+requests
+holidays
+pulp
+matplotlib
+plotly
+streamlit
+# Orquestación (opcional)
+prefect
