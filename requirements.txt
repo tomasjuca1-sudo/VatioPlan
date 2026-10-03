@@ -6,6 +6,4 @@ holidays
 pulp
 matplotlib
 plotly
-streamlit
-# Orquestación (opcional)
-prefect
+streamlit>=1.50
