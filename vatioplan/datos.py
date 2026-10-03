@@ -98,11 +98,16 @@ def descargar_xm(metrica: str, inicio: date, fin: date, entidad: str = "Sistema"
             for ent in item.get("DailyEntities", []):
                 valor = ent.get("Values", {}).get("Value")
                 filas.append({"fecha": item.get("Date"), "valor": valor})
+                if len(filas) == 1:
+                    print(f"  XM {metrica} primera entidad cruda: {json.dumps(ent, ensure_ascii=False)[:400]}")
         if verbose:
             print(f"  XM {metrica} {a} → {b}: ok")
     s = pd.DataFrame(filas)
-    s["fecha"] = pd.to_datetime(s["fecha"])
+    muestra = s.head(3).to_dict("records")
+    s["fecha"] = pd.to_datetime(s["fecha"].astype(str).str[:10])   # solo AAAA-MM-DD, sin hora ni zona
     s["valor"] = pd.to_numeric(s["valor"], errors="coerce")
+    if verbose or s["valor"].notna().sum() == 0:
+        print(f"  XM {metrica}: {s['valor'].notna().sum()} de {len(s)} filas con valor. Muestra cruda: {muestra}")
     return s.groupby("fecha")["valor"].mean().rename(metrica)
 
 
