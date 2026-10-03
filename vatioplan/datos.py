@@ -238,6 +238,13 @@ def cargar_datos(inicio: date | str = "2023-01-01", fin: date | str | None = Non
         mensual = idx.to_period("M").to_timestamp()
         df["oni"] = oni.reindex(mensual).ffill().values
 
+    # Una variable que llega 100% vacía no sirve y rompe el entrenamiento en scikit-learn 1.9+.
+    # Se descarta y se avisa, para que el modelo siga con las variables que sí llegaron.
+    for col in ["vol_util_pct", "aportes_gwh", "oni"]:
+        if col in df and df[col].isna().all():
+            print(f"⚠️  La variable '{col}' llegó vacía; el modelo seguirá sin ella.")
+            del df[col]
+
     df.attrs["fuente"] = "REAL"
     if verbose:
         print(f"✅ Datos reales: {df.index.min()} → {df.index.max()} ({len(df):,} horas)")
