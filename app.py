@@ -52,12 +52,16 @@ c_act, c_opt = costo_plan(act, precios, planta), costo_plan(opt, precios, planta
 # ---------------- encabezado ----------------
 st.title(f"Plan de energía · {planta.nombre}")
 k1, k2, k3, k4 = st.columns(4)
-k1.metric("Costo con operación actual", f"${c_act:,.0f}")
-k2.metric("Costo con VatioPlan", f"${c_opt:,.0f}", f"-{(1 - c_opt / c_act) * 100:.1f}%", delta_color="inverse")
-k3.metric("Ahorro del día (COP)", f"${c_act - c_opt:,.0f}")
+nota_pronostico = "Calculado con el precio pronosticado, no con el precio real."
+k1.metric("Costo estimado con operación actual", f"${c_act:,.0f}", help=nota_pronostico)
+k2.metric("Costo estimado con VatioPlan", f"${c_opt:,.0f}", f"-{(1 - c_opt / c_act) * 100:.1f}%",
+          delta_color="inverse", help=nota_pronostico)
+k3.metric("Ahorro estimado del día (COP)", f"${c_act - c_opt:,.0f}", help=nota_pronostico)
 m = r["evaluacion"]["metricas"]
 k4.metric("Horas baratas acertadas", f"{m['acierto_horas_baratas_modelo']:.0%}",
           f"{(m['acierto_horas_baratas_modelo'] - m['acierto_horas_baratas_base']) * 100:+.0f} pts vs. ingenuo")
+st.caption("Los costos y el ahorro del día usan el pronóstico. El ahorro medido con precios reales "
+           "está en la pestaña Validación del modelo (ahorro real en backtest).")
 
 tab1, tab2, tab3, tab4 = st.tabs(["📋 Plan del día", "📈 Pronóstico", "🧪 Validación del modelo", "🤖 Informe IA"])
 
