@@ -51,8 +51,10 @@ def evaluar(df: pd.DataFrame, dias_prueba: int = 90) -> dict:
     X, y = _dataset(df)
     corte = y.index.max() - pd.Timedelta(days=dias_prueba)
     ent, pru = y.index <= corte, y.index > corte
-    modelo = nuevo_modelo().fit(X[ent], y[ent])
-    pred = pd.Series(modelo.predict(X[pru]), index=y.index[pru])
+    y_residuo = y[ent] - X.loc[ent, "precio_lag_168h"]
+    modelo = nuevo_modelo().fit(X[ent], y_residuo)
+    pred_valores = X.loc[pru, "precio_lag_168h"].values + modelo.predict(X[pru])
+    pred = pd.Series(pred_valores, index=y.index[pru])
     base = X.loc[pru, "precio_lag_168h"]
     real = y[pru]
 
@@ -76,7 +78,8 @@ def evaluar(df: pd.DataFrame, dias_prueba: int = 90) -> dict:
 
 def entrenar(df: pd.DataFrame) -> HistGradientBoostingRegressor:
     X, y = _dataset(df)
-    return nuevo_modelo().fit(X, y)
+    y_residuo = y - X["precio_lag_168h"]
+    return nuevo_modelo().fit(X, y_residuo)
 
 
 def pronosticar(df: pd.DataFrame, modelo, horas: int = HORIZONTE_H) -> pd.Series:
@@ -84,14 +87,15 @@ def pronosticar(df: pd.DataFrame, modelo, horas: int = HORIZONTE_H) -> pd.Series
     ext = extender_futuro(df, horas)
     X = construir_features(ext)
     fut = X.index[X.index > df.index.max()]
-    return pd.Series(modelo.predict(X.loc[fut]), index=fut, name="precio_pronostico")
+    pred_valores = X.loc[fut, "precio_lag_168h"].values + modelo.predict(X.loc[fut])
+    return pd.Series(pred_valores, index=fut, name="precio_pronostico")
 
 
 def importancia_variables(modelo, df: pd.DataFrame, n_muestras: int = 3000) -> pd.Series:
     """Importancia por permutación (qué variables usa más el modelo)."""
     from sklearn.inspection import permutation_importance
-    X, y = _dataset(df)
     X, y = X.tail(n_muestras), y.tail(n_muestras)
+    y = y - X["precio_lag_168h"]
     r = permutation_importance(modelo, X, y, n_repeats=5, random_state=0,
                                scoring="neg_mean_absolute_error")
     return pd.Series(r.importances_mean, index=X.columns).sort_values(ascending=False)
