@@ -21,8 +21,8 @@ import pandas as pd
 
 from .datos import cargar_datos
 from .informe import generar_informe
-from .modelo import entrenar, evaluar, pronosticar
-from .planta import Planta, backtest, planear_periodo, validar_plan
+from .modelo import NOMBRE_PRINCIPAL, acierto_horas_baratas, entrenar, evaluar, mape, pronosticar
+from .planta import Planta, backtest, costo_plan, optimizar_dia, planear_periodo, validar_plan
 
 RAIZ = Path(__file__).resolve().parent.parent
 
@@ -47,6 +47,37 @@ def paso_datos(inicio="2023-01-01", fin=None, cache=None) -> pd.DataFrame:
 def paso_modelo(df: pd.DataFrame, dias_prueba: int = 90):
     ev = evaluar(df, dias_prueba)
     return entrenar(df), ev
+
+
+def comparar_candidatos(ev: dict, bt_principal: pd.DataFrame, planta: Planta) -> pd.DataFrame:
+    """Compara todos los candidatos en el mismo periodo de prueba: error, horas baratas y
+    ahorro real en backtest (plan hecho con el pronostico y pagado con el precio real).
+    Reutiliza el backtest del modelo principal para no repetir el plan actual y el perfecto."""
+    real = ev["real"]
+    dias_backtest = list(bt_principal.index)
+    costo_actual_total = bt_principal["costo_actual"].sum()
+    filas = []
+    for nombre, pred in ev["candidatos"].items():
+        pred = pred.reindex(real.index)
+        if nombre == NOMBRE_PRINCIPAL:
+            costo_pronostico_total = bt_principal["costo_con_pronostico"].sum()
+        else:
+            costo_pronostico_total = 0.0
+            for dia in dias_backtest:
+                filas_dia = real.index.normalize() == dia
+                precios_reales = real[filas_dia].values
+                precios_pronostico = pred[filas_dia].values
+                plan = optimizar_dia(precios_pronostico, planta)
+                costo_pronostico_total += costo_plan(plan, precios_reales, planta)
+        filas.append({
+            "Candidato": nombre,
+            "MAE (COP/kWh)": float((pred - real).abs().mean()),
+            "MAPE (%)": mape(real, pred),
+            "Horas baratas acertadas (%)": acierto_horas_baratas(real, pred) * 100,
+            "Ahorro real en backtest (%)": (1 - costo_pronostico_total / costo_actual_total) * 100,
+        })
+    tabla = pd.DataFrame(filas).sort_values("Ahorro real en backtest (%)", ascending=False)
+    return tabla.reset_index(drop=True)
 
 
 def paso_pronostico(df, modelo, dias_plan: int = 3, hoy: date | None = None) -> pd.Series:
@@ -111,6 +142,7 @@ def ejecutar(ruta_planta: str | Path | None = None, dias_plan: int = 3, inicio="
     pron = paso_pronostico(df, modelo, dias_plan)
     plan = paso_planeacion(pron, planta)
     bt = backtest(ev["real"], ev["pred"], planta)
+    comparacion = comparar_candidatos(ev, bt, planta)
     resumen = resumen_para_ia(plan, pron, ev, planta, fuente)
     texto, proveedor = generar_informe(resumen)
 
@@ -119,6 +151,7 @@ def ejecutar(ruta_planta: str | Path | None = None, dias_plan: int = 3, inicio="
     pron.to_frame().to_csv(salida / "pronostico.csv")
     pd.DataFrame({"real": ev["real"], "modelo": ev["pred"], "base_ingenua": ev["base"]}).to_csv(salida / "evaluacion.csv")
     bt.to_csv(salida / "backtest.csv")
+    comparacion.to_csv(salida / "comparacion_modelos.csv", index=False)
     filas = []
     for d in plan["dias"]:
         for tipo in ["plan_actual", "plan_optimo"]:
@@ -136,6 +169,7 @@ def ejecutar(ruta_planta: str | Path | None = None, dias_plan: int = 3, inicio="
         "ahorro_real_con_pronostico_pct": round(float(100 * (1 - bt["costo_con_pronostico"].sum() / bt["costo_actual"].sum())), 1),
         "ahorro_maximo_teorico_pct": round(float(100 * (1 - bt["costo_perfecto"].sum() / bt["costo_actual"].sum())), 1),
     }
+    resumen["comparacion_modelos"] = comparacion.round(1).to_dict("records")
     resumen["proveedor_ia"] = proveedor
     (salida / "resumen.json").write_text(json.dumps(resumen, ensure_ascii=False, indent=2, default=str), encoding="utf-8")
     (salida / "informe.md").write_text(texto, encoding="utf-8")
@@ -146,8 +180,12 @@ def ejecutar(ruta_planta: str | Path | None = None, dias_plan: int = 3, inicio="
         print("=" * 70)
         print(f"Informe generado con: {proveedor} · archivos en {salida}")
     return {"df": df, "modelo": modelo, "evaluacion": ev, "pronostico": pron, "plan": plan,
-            "backtest": bt, "resumen": resumen, "informe": texto, "planta": planta}
+            "backtest": bt, "comparacion": comparacion, "resumen": resumen, "informe": texto,
+            "planta": planta}
 
+
+if __name__ == "__main__":
+    ejecutar()
 
 if __name__ == "__main__":
     ejecutar()
