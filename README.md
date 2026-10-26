@@ -18,7 +18,7 @@ SIMEM/XM + NOAA ─▶ Datos ─▶ Modelo ML ─▶ Pronóstico ─▶ Optimiza
 |---|---|
 | `vatioplan/datos.py` | Descarga automática: precio horario (SIMEM `EC6945`), embalses y aportes (API XM), ONI (NOAA). Caché incremental en `data/`. |
 | `vatioplan/features.py` | Variables del modelo, todas rezagadas ≥ 7 días (sin fuga de datos). |
-| `vatioplan/modelo.py` | Gradient boosting (scikit-learn), comparación contra método ingenuo, métrica de "horas baratas acertadas". |
+| `vatioplan/modelo.py` | Gradient boosting (scikit-learn) que corrige el promedio del precio de las últimas 4 semanas según hora, día y festivos. Se compara contra el método ingenuo, el promedio de 4 semanas y las versiones anteriores del modelo, con la métrica de "horas baratas acertadas" y el ahorro real en backtest. |
 | `vatioplan/planta.py` | Optimización (PuLP), reglas R1–R4, validación "Cumple / No cumple", backtest de ahorro. |
 | `vatioplan/informe.py` | Informe con Gemini o Groq (gratis); plantilla si no hay API key. |
 | `vatioplan/pipeline.py` | Une todos los pasos y escribe `salidas/`. |
