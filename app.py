@@ -99,7 +99,17 @@ with tab3:
     bt = r["backtest"]
     c3.metric("Ahorro real en backtest", f"{(1 - bt['costo_con_pronostico'].sum() / bt['costo_actual'].sum()) * 100:.1f}%",
               f"máximo posible {(1 - bt['costo_perfecto'].sum() / bt['costo_actual'].sum()) * 100:.1f}%")
-    ult = pd.DataFrame({"Real": ev["real"], "Modelo ML": ev["pred"], "Ingenuo (hace 7 días)": ev["base"]}).tail(24 * 14)
+    st.subheader("Comparación de modelos en el periodo de prueba")
+    st.caption(f"Periodo de prueba: {m['periodo_prueba']}. Todos los candidatos se evalúan en los mismos días. "
+               "El ahorro real se mide planeando con cada pronóstico y pagando con el precio real.")
+    tabla_comparacion = r["comparacion"].round(1)
+    tabla_comparacion["MAE (COP/kWh)"] = tabla_comparacion["MAE (COP/kWh)"].round(0).astype(int)
+    st.dataframe(tabla_comparacion, hide_index=True, width="stretch")
+    st.caption("Modelo principal: gradient boosting que corrige el promedio del precio de la misma hora en las "
+               "últimas 4 semanas, según la hora, el día de la semana y los festivos. Las versiones anteriores "
+               "del gradient boosting quedan en la tabla como referencia.")
+    ult = pd.DataFrame({"Real": ev["real"], "Modelo ML (GB sobre promedio 4 semanas)": ev["pred"],
+                        "Ingenuo (hace 7 días)": ev["base"]}).tail(24 * 14)
     st.plotly_chart(px.line(ult, labels={"value": "COP/kWh", "index": ""},
                             title="Últimas 2 semanas del periodo de prueba"), width="stretch")
     ahorro = (bt["costo_actual"] - bt["costo_con_pronostico"]).cumsum()
@@ -111,3 +121,4 @@ with tab4:
     st.markdown(r["informe"])
     st.caption(f"Redactado con: {r['resumen'].get('proveedor_ia', '—')}. Las cifras vienen del pipeline; la IA solo redacta.")
     st.download_button("⬇️ Descargar informe", r["informe"], file_name="informe_vatioplan.md")
+
