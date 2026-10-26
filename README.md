@@ -20,6 +20,7 @@ SIMEM/XM + NOAA ─▶ Datos ─▶ Modelo ML ─▶ Pronóstico ─▶ Optimiza
 | `vatioplan/features.py` | Variables del modelo, todas rezagadas ≥ 7 días (sin fuga de datos). |
 | `vatioplan/modelo.py` | Gradient boosting (scikit-learn) que corrige el promedio del precio de las últimas 4 semanas según hora, día y festivos. Se compara contra el método ingenuo, el promedio de 4 semanas y las versiones anteriores del modelo, con la métrica de "horas baratas acertadas" y el ahorro real en backtest. |
 | `vatioplan/planta.py` | Optimización (PuLP), reglas R1–R4, validación "Cumple / No cumple", backtest de ahorro. |
+| `vatioplan/flotas.py` | Carga inteligente de flotas eléctricas: programa la carga de cada grupo de vehículos en las horas más baratas (PuLP), respetando hora de llegada y salida, potencia de cargadores y límite del patio. Compara contra la carga inmediata y mide el ahorro real en backtest. |
 | `vatioplan/informe.py` | Informe con Gemini o Groq (gratis); plantilla si no hay API key. |
 | `vatioplan/pipeline.py` | Une todos los pasos y escribe `salidas/`. |
 | `config/planta_ejemplo.json` | La planta: equipos, potencias, horarios permitidos. **Edítenlo para otra planta.** |
@@ -64,5 +65,8 @@ La API key va en *Settings → Secrets*.
 - **Versiones del precio:** XM re-liquida cada hora (TX1 → TX2 → TXR → TXF → TX3…); se usa la más reciente.
 - **Datos simulados:** si no hay conexión, `cargar_datos` genera una serie sintética marcada como
   `SIMULADO` solo para probar el código. **Nunca presenten esas cifras como resultados.**
+- **Supuesto de negocio:** el ahorro aplica cuando la empresa paga parte de su energía a precio de bolsa
+  (parámetro `exposicion_bolsa`). Un usuario regulado con tarifa plana no ahorra moviendo cargas.
+
 - **Supuesto de negocio:** el ahorro aplica cuando la empresa paga parte de su energía a precio de bolsa
   (parámetro `exposicion_bolsa`). Un usuario regulado con tarifa plana no ahorra moviendo cargas.
