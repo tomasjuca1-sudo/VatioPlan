@@ -1,13 +1,15 @@
 """
-planta.py — Programación de cargas flexibles + reglas de ingeniería.
+planta.py: Programación de cargas flexibles + reglas de ingeniería.
 
 Para cada día se decide a qué horas funciona cada carga flexible, minimizando
-    costo = Σ_h  precio(h) · potencia · x(carga, h)
+    costo = Σ_h  precio(h) × potencia × x(carga, h)
 sujeto a las REGLAS DE INGENIERÍA:
   R1  Cada carga cumple sus horas diarias requeridas (producción no se sacrifica).
   R2  Solo opera en su ventana permitida (turnos, disponibilidad de operario).
   R3  Las cargas continuas (horno) operan en un único bloque sin interrupción.
   R4  La potencia total de la planta nunca supera la potencia máxima contratada.
+  R5  Corrida mínima: si un equipo arranca, opera al menos `min_horas_seguidas` horas
+      seguidas (p. ej. un molino no se prende y apaga cada hora).
 Se resuelve como un problema de programación lineal entera (PuLP + solver CBC, gratis).
 El plan se valida después con las mismas reglas → "Cumple / No cumple".
 """
@@ -35,6 +37,7 @@ class Carga:
     horas_permitidas: list
     inicio_actual: int
     motivo_restriccion: str = ""
+    min_horas_seguidas: int = 1
     permitidas: set = field(default_factory=set, init=False)
 
     def __post_init__(self):
@@ -52,13 +55,16 @@ class Planta:
     cargas: list
     exposicion_bolsa: float = 1.0
     descripcion: str = ""
+    fuentes: list = field(default_factory=list)
+    supuestos: str = ""
 
     @classmethod
     def desde_json(cls, ruta: str | Path) -> "Planta":
         c = json.loads(Path(ruta).read_text(encoding="utf-8"))
         return cls(nombre=c["nombre"], potencia_maxima_kw=c["potencia_maxima_kw"],
                    base=c["carga_base_kw"], cargas=[Carga(**x) for x in c["cargas_flexibles"]],
-                   exposicion_bolsa=c.get("exposicion_bolsa", 1.0), descripcion=c.get("descripcion", ""))
+                   exposicion_bolsa=c.get("exposicion_bolsa", 1.0), descripcion=c.get("descripcion", ""),
+                   fuentes=c.get("fuentes", []), supuestos=c.get("supuestos", ""))
 
     def carga_base(self) -> np.ndarray:
         b = self.base
@@ -100,6 +106,16 @@ def optimizar_dia(precios: np.ndarray, planta: Planta) -> pd.DataFrame:
             prob += pulp.lpSum(y.values()) == 1
             for h in H:
                 prob += x[c.nombre, h] == pulp.lpSum(y[s] for s in inicios if s <= h < s + c.horas_dia)
+        elif c.min_horas_seguidas > 1:                                                         # R5
+            m = c.min_horas_seguidas
+            arranque = {h: pulp.LpVariable(f"s_{i}_{h}", cat="Binary") for h in H}
+            for h in H:
+                previo = x[c.nombre, h - 1] if h > 0 else 0
+                prob += arranque[h] >= x[c.nombre, h] - previo
+                if h + m <= 24:
+                    prob += pulp.lpSum(x[c.nombre, h + k] for k in range(m)) >= m * arranque[h]
+                else:
+                    prob += arranque[h] == 0
     for h in H:                                                                               # R4
         prob += base[h] + pulp.lpSum(c.potencia_kw * x[c.nombre, h] for c in planta.cargas) \
             <= planta.potencia_maxima_kw
@@ -134,8 +150,22 @@ def _greedy_dia(precios: np.ndarray, planta: Planta) -> pd.DataFrame:
 # ---------------------------------------------------------------------------
 # Reglas, costos y planes de varios días
 # ---------------------------------------------------------------------------
+def _bloques(horas: list[int]) -> list[int]:
+    """Largo de cada bloque de horas consecutivas dentro del día."""
+    largos, actual = [], 0
+    for h in range(24):
+        if h in horas:
+            actual += 1
+        elif actual:
+            largos.append(actual)
+            actual = 0
+    if actual:
+        largos.append(actual)
+    return largos
+
+
 def validar_plan(plan: pd.DataFrame, planta: Planta) -> pd.DataFrame:
-    """Verifica las reglas R1–R4. Devuelve una tabla Regla | Carga | Resultado."""
+    """Verifica las reglas R1 a R5. Devuelve una tabla Regla | Carga | Resultado."""
     filas = []
     total = planta.carga_base() + sum(plan[c.nombre].values * c.potencia_kw for c in planta.cargas)
     for c in planta.cargas:
@@ -145,6 +175,9 @@ def validar_plan(plan: pd.DataFrame, planta: Planta) -> pd.DataFrame:
         if c.continua:
             filas.append(("R3 Operación continua", c.nombre,
                           bool(horas) and horas[-1] - horas[0] + 1 == len(horas)))
+        elif c.min_horas_seguidas > 1:
+            filas.append((f"R5 Corrida mínima ({c.min_horas_seguidas} h)", c.nombre,
+                          all(b >= c.min_horas_seguidas for b in _bloques(horas))))
     filas.append(("R4 Potencia ≤ máxima", "Planta completa", bool((total <= planta.potencia_maxima_kw + 1e-6).all())))
     t = pd.DataFrame(filas, columns=["regla", "carga", "cumple"])
     t["resultado"] = np.where(t["cumple"], "✅ Cumple", "❌ No cumple")

@@ -1,0 +1,3 @@
+# Solo para la máquina que orquesta con Prefect (no hace falta en Streamlit Cloud)
+-r requirements.txt
+prefect>=3.4

@@ -1,0 +1,57 @@
+{
+  "tipo": "flota",
+  "nombre": "Patio eléctrico Fontibón I (Refugio), SITP Bogotá (caso de referencia)",
+  "descripcion": "Primer patio 100 % eléctrico del SITP, operado por Gran Américas Fontibón I (concesión de 15 años). 120 buses BYD: 60 padrón (80 pasajeros) y 60 busetones (50 pasajeros), 56 puntos dobles de carga y 260 km de autonomía. Los buses zonales operan de 4:00 a 23:00 de lunes a sábado y cargan de noche en el patio.",
+  "potencia_patio_kw": 8400,
+  "hora_inicio": 12,
+  "exposicion_bolsa": 0.5,
+  "grupos": [
+    {
+      "nombre": "Padrón, turno A",
+      "cantidad": 30,
+      "bateria_kwh": 313,
+      "cargador_kw": 75,
+      "hora_llegada": 21,
+      "hora_salida": 4,
+      "carga_llegada_pct": 30,
+      "carga_salida_pct": 95
+    },
+    {
+      "nombre": "Padrón, turno B",
+      "cantidad": 30,
+      "bateria_kwh": 313,
+      "cargador_kw": 75,
+      "hora_llegada": 23,
+      "hora_salida": 5,
+      "carga_llegada_pct": 30,
+      "carga_salida_pct": 95
+    },
+    {
+      "nombre": "Busetón, turno A",
+      "cantidad": 30,
+      "bateria_kwh": 215,
+      "cargador_kw": 75,
+      "hora_llegada": 20,
+      "hora_salida": 4,
+      "carga_llegada_pct": 25,
+      "carga_salida_pct": 95
+    },
+    {
+      "nombre": "Busetón, turno B",
+      "cantidad": 30,
+      "bateria_kwh": 215,
+      "cargador_kw": 75,
+      "hora_llegada": 22,
+      "hora_salida": 5,
+      "carga_llegada_pct": 25,
+      "carga_salida_pct": 95
+    }
+  ],
+  "fuentes": [
+    "Sáenz Laverde, G. (17 de diciembre de 2020). Bogotá estrena primer patio 100 % eléctrico y 120 buses cero emisiones. Alcaldía Mayor de Bogotá. https://bogota.gov.co/mi-ciudad/movilidad/bogota-estrena-primer-patio-100-electrico-y-120-buses-cero-emisiones. Datos usados: 120 buses (60 padrón y 60 busetones), operador y concesión, 56 puntos dobles, control de potencia de 150 kW, carga de 2 a 4 h y 260 km de autonomía.",
+    "Arias Calvo, J. (22 de abril de 2021). ¿Hasta qué hora operan los buses zonales del SITP durante el toque de queda? Alcaldía Mayor de Bogotá. https://bogota.gov.co/mi-ciudad/movilidad/toque-de-queda-hasta-que-hora-operan-los-buses-zonales-del-sitp. Dato usado: horario habitual de lunes a sábado de 4:00 a 23:00 (domingos y festivos de 5:00 a 22:00).",
+    "Enel X. (14 de febrero de 2022). Enel X entregó 172 buses eléctricos y el quinto patio de recarga a Bogotá [Comunicado de prensa]. https://www.enelx.com/content/dam/local-colombia/carpeta-global-de-archivos/comunicados-de-prensa/2022/02/enel-x-entrego-172-buses-electricos-y-el-quinto-patio-de-recarga-a-bogota.pdf. Dato usado por analogía (patio Fontibón III, Escritorio): cargadores de 150 kW que cargan un bus en 2 h o dos buses en 4 h.",
+    "BYD K series. (2026). En Wikipedia. Consultado el 7 de noviembre de 2026. https://en.wikipedia.org/wiki/BYD_K_series. Datos usados: baterías de referencia BYD K9 (12 m, 313 kWh) y K7 (8,5 m, 215 kWh)."
+  ],
+  "supuestos": "La capacidad de batería de los buses del patio no es pública. Se usan las de los modelos BYD de tamaño equivalente: K9 para padrón y K7 para busetón. La Alcaldía informa un control de potencia de 150 kW, pero no dice si es por punto. El límite del patio (8.400 kW = 56 puntos × 150 kW) supone 150 kW por punto doble, compartidos por dos buses (75 kW por bus), por analogía con el patio Fontibón III de Enel X. Los 56 puntos dobles dan 112 conexiones para 120 buses: el modelo supone que los 8 buses restantes rotan de conector durante la noche. Se modela un día hábil (operación de 4:00 a 23:00). Las horas de llegada y salida en dos turnos, la carga al llegar de 25 a 30 % y la exposición a bolsa de 50 % son supuestos ajustables."
+}

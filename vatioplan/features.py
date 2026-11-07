@@ -1,5 +1,5 @@
 """
-features.py — Variables de entrada para el modelo.
+features.py: Variables de entrada para el modelo.
 
 Regla clave para evitar FUGA DE DATOS: el precio se publica con ~3 días de retraso y
 queremos planear varios días hacia adelante. Por eso TODAS las variables usan

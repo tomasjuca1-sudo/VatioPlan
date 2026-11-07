@@ -1,13 +1,13 @@
 """
-datos.py — Adquisición automática de datos públicos.
+datos.py: Adquisición automática de datos públicos.
 
 Fuentes (todas gratuitas y sin API key):
-  1. SIMEM (XM)  — Precio de bolsa nacional horario, conjunto EC6945.
+  1. SIMEM (XM): Precio de bolsa nacional horario, conjunto EC6945.
                    GET https://www.simem.co/backend-files/api/PublicData
-  2. API XM       — Variables hidrológicas diarias (volumen útil de embalses, aportes).
+  2. API XM: Variables hidrológicas diarias (volumen útil de embalses, aportes).
                    POST https://servapibi.xm.com.co/daily
-  3. NOAA CPC     — Índice ONI (El Niño / La Niña), mensual.
-  4. Festivos de Colombia — librería `holidays`.
+  3. NOAA CPC: Índice ONI (El Niño / La Niña), mensual.
+  4. Festivos de Colombia: librería `holidays`.
 
 Si alguna fuente no responde, el pipeline sigue con las demás. Solo si NO hay
 precio real disponible (p. ej. sin internet) se generan datos SIMULADOS para poder
@@ -16,9 +16,9 @@ probar el código; en ese caso todo se marca con fuente = "SIMULADO".
 from __future__ import annotations
 
 import io
-import json
+import os
 import time
-from datetime import date, datetime, timedelta
+from datetime import date, timedelta
 from pathlib import Path
 
 import numpy as np
@@ -48,31 +48,42 @@ def _bloques(inicio: date, fin: date, dias: int):
 # ---------------------------------------------------------------------------
 # 1. Precio de bolsa horario (SIMEM)
 # ---------------------------------------------------------------------------
-def descargar_precio_bolsa(inicio: date, fin: date, verbose: bool = True) -> pd.Series:
-    """Precio de bolsa nacional horario (COP/kWh), quedándose con la versión más reciente
-    de liquidación de cada hora. Devuelve una Serie indexada por fecha-hora."""
-    registros = []
-    for a, b in _bloques(inicio, fin, 30):
-        params = {"startdate": a.isoformat(), "enddate": b.isoformat(), "datasetId": "EC6945"}
-        for intento in range(3):
-            try:
-                r = requests.get(SIMEM_URL, params=params, timeout=TIMEOUT)
-                r.raise_for_status()
-                recs = r.json().get("result", {}).get("records", [])
-                registros.extend(recs)
+PAUSA_ENTRE_SOLICITUDES = float(os.getenv("VATIOPLAN_PAUSA_S", "2"))   # SIMEM bloquea ráfagas (403)
+ESPERA_BLOQUEO = float(os.getenv("VATIOPLAN_ESPERA_403_S", "60"))
+INTENTOS_BLOQUEO = 5
+CABECERAS = {"User-Agent": "Mozilla/5.0 (VatioPlan; proyecto academico Uniandes)"}
+
+
+def _pedir_simem(a: date, b: date, verbose: bool) -> list:
+    """Una solicitud a SIMEM con pausa previa. Ante 403/429 (bloqueo por ráfaga) espera y
+    reintenta; ante otros errores reintenta 3 veces con espera corta."""
+    params = {"startdate": a.isoformat(), "enddate": b.isoformat(), "datasetId": "EC6945"}
+    errores_otros = 0
+    for intento in range(INTENTOS_BLOQUEO):
+        time.sleep(PAUSA_ENTRE_SOLICITUDES)
+        try:
+            r = requests.get(SIMEM_URL, params=params, headers=CABECERAS, timeout=TIMEOUT)
+            if r.status_code in (403, 429):
                 if verbose:
-                    print(f"  SIMEM {a} → {b}: {len(recs)} registros")
-                break
-            except Exception as e:  # reintento simple
-                if intento == 2:
-                    raise RuntimeError(f"SIMEM falló para {a}–{b}: {e}") from e
-                time.sleep(2 * (intento + 1))
+                    print(f"  {r.status_code} de SIMEM, esperando {ESPERA_BLOQUEO:.0f} s (intento {intento + 1})")
+                time.sleep(ESPERA_BLOQUEO)
+                continue
+            r.raise_for_status()
+            return r.json().get("result", {}).get("records", [])
+        except requests.RequestException as e:
+            errores_otros += 1
+            if errores_otros >= 3:
+                raise RuntimeError(f"SIMEM falló para {a} a {b}: {e}") from e
+            time.sleep(2 * errores_otros)
+    raise RuntimeError(f"SIMEM bloqueó la descarga de {a} a {b} (403/429 repetidos)")
 
+
+def _limpiar_simem(registros: list) -> pd.Series:
+    """Solo precio nacional (PB_Nal) y la versión de liquidación más reciente de cada hora."""
     if not registros:
-        raise RuntimeError("SIMEM no devolvió registros")
-
+        return pd.Series(dtype=float, name="precio")
     df = pd.DataFrame(registros)
-    df = df[df["CodigoVariable"] == "PB_Nal"].copy()          # solo precio nacional
+    df = df[df["CodigoVariable"] == "PB_Nal"].copy()
     df["FechaHora"] = pd.to_datetime(df["FechaHora"])
     df["Valor"] = pd.to_numeric(df["Valor"], errors="coerce")
     df["rango"] = df["Version"].map(RANGO_VERSION).fillna(-1)
@@ -80,6 +91,37 @@ def descargar_precio_bolsa(inicio: date, fin: date, verbose: bool = True) -> pd.
     serie = df.set_index("FechaHora")["Valor"].sort_index()
     serie.name = "precio"
     return serie
+
+
+def descargar_precio_bolsa(inicio: date, fin: date, verbose: bool = True,
+                           carpeta_bloques: str | Path | None = None) -> pd.Series:
+    """Precio de bolsa nacional horario (COP/kWh) por bloques de 30 días.
+    Si se da `carpeta_bloques`, cada bloque ya cerrado (más de 20 días de antigüedad, cuando
+    XM ya no lo re-liquida) se guarda en disco: si SIMEM bloquea a mitad de camino, la
+    siguiente corrida solo pide los bloques que faltan."""
+    carpeta = Path(carpeta_bloques) if carpeta_bloques else None
+    if carpeta:
+        carpeta.mkdir(parents=True, exist_ok=True)
+    cerrado_hasta = date.today() - timedelta(days=20)
+    partes = []
+    for a, b in _bloques(inicio, fin, 30):
+        archivo = carpeta / f"simem_{a}_{b}.csv" if carpeta else None
+        if archivo is not None and archivo.exists():
+            partes.append(pd.read_csv(archivo, index_col=0, parse_dates=True)["precio"])
+            continue
+        serie = _limpiar_simem(_pedir_simem(a, b, verbose))
+        if verbose:
+            print(f"  SIMEM {a} → {b}: {len(serie)} horas")
+        if archivo is not None and b <= cerrado_hasta and len(serie):
+            serie.to_frame().to_csv(archivo)
+        partes.append(serie)
+    partes = [p for p in partes if len(p)]
+    if not partes:
+        raise RuntimeError("SIMEM no devolvió registros")
+    precio = pd.concat(partes).sort_index()
+    precio = precio[~precio.index.duplicated(keep="last")]
+    precio.name = "precio"
+    return precio
 
 
 # ---------------------------------------------------------------------------
@@ -96,18 +138,19 @@ def descargar_xm(metrica: str, inicio: date, fin: date, entidad: str = "Sistema"
         r.raise_for_status()
         for item in r.json().get("Items", []):
             for ent in item.get("DailyEntities", []):
-                valor = ent.get("Values", {}).get("Value")
+                # La API devuelve {"Id": "Sistema", "Value": "0.79"}; versiones antiguas usaban "Values"
+                valor = ent.get("Value")
+                if valor is None and isinstance(ent.get("Values"), dict):
+                    valor = ent["Values"].get("Value")
                 filas.append({"fecha": item.get("Date"), "valor": valor})
-                if len(filas) == 1:
-                    print(f"  XM {metrica} primera entidad cruda: {json.dumps(ent, ensure_ascii=False)[:400]}")
         if verbose:
             print(f"  XM {metrica} {a} → {b}: ok")
     s = pd.DataFrame(filas)
     muestra = s.head(3).to_dict("records")
     s["fecha"] = pd.to_datetime(s["fecha"].astype(str).str[:10])   # solo AAAA-MM-DD, sin hora ni zona
     s["valor"] = pd.to_numeric(s["valor"], errors="coerce")
-    if verbose or s["valor"].notna().sum() == 0:
-        print(f"  XM {metrica}: {s['valor'].notna().sum()} de {len(s)} filas con valor. Muestra cruda: {muestra}")
+    if s["valor"].notna().sum() == 0:
+        print(f"  XM {metrica}: 0 de {len(s)} filas con valor. Muestra: {muestra}")
     return s.groupby("fecha")["valor"].mean().rename(metrica)
 
 
@@ -133,7 +176,7 @@ def descargar_oni() -> pd.Series:
 # ---------------------------------------------------------------------------
 def generar_datos_simulados(inicio: date, fin: date, semilla: int = 7) -> pd.DataFrame:
     """Serie horaria SINTÉTICA con la forma típica del mercado colombiano:
-    pico nocturno 18–21 h, valle de madrugada, efecto hidrología/El Niño y domingos.
+    pico nocturno 18 a 21 h, valle de madrugada, efecto hidrología/El Niño y domingos.
     NO son datos reales: sirve para ejecutar el pipeline sin conexión."""
     rng = np.random.default_rng(semilla)
     idx = pd.date_range(inicio, pd.Timestamp(fin) + pd.Timedelta(hours=23), freq="h")
@@ -189,7 +232,7 @@ def cargar_datos(inicio: date | str = "2023-01-01", fin: date | str | None = Non
             desde = max(inicio, (previo.index.max() - pd.Timedelta(days=10)).date())
         if verbose:
             print(f"Descargando precio de bolsa (SIMEM) {desde} → {fin} ...")
-        nuevo = descargar_precio_bolsa(desde, fin, verbose=verbose)
+        nuevo = descargar_precio_bolsa(desde, fin, verbose=verbose, carpeta_bloques=cache / "simem_bloques")
         precio = nuevo if previo is None else pd.concat([previo[previo.index < pd.Timestamp(desde)], nuevo])
         precio = precio[~precio.index.duplicated(keep="last")].sort_index()
         precio.to_frame().to_csv(archivo)
@@ -220,8 +263,21 @@ def cargar_datos(inicio: date | str = "2023-01-01", fin: date | str | None = Non
                                  ("AporEner", "aportes_gwh", 1e-6)]:
         f_cache = cache / f"{metrica}.csv"
         try:
-            s = descargar_xm(metrica, dias_ini, dias_fin, verbose=verbose) * escala
-            s.to_frame().to_csv(f_cache)
+            previo_xm = None
+            desde_xm = dias_ini
+            if f_cache.exists():
+                previo_xm = pd.read_csv(f_cache, index_col=0, parse_dates=True).iloc[:, 0].dropna()
+                if len(previo_xm):           # incremental: solo los últimos 10 días
+                    desde_xm = max(dias_ini, (previo_xm.index.max() - pd.Timedelta(days=10)).date())
+                else:
+                    previo_xm = None
+            s = descargar_xm(metrica, desde_xm, dias_fin, verbose=verbose) * escala
+            if previo_xm is not None:
+                s = pd.concat([previo_xm[previo_xm.index < pd.Timestamp(desde_xm)], s])
+                s = s[~s.index.duplicated(keep="last")].sort_index()
+            if s.notna().sum() == 0:
+                raise RuntimeError("respuesta sin valores")
+            s.rename(metrica).to_frame().to_csv(f_cache)
         except Exception as e:
             if f_cache.exists():
                 s = pd.read_csv(f_cache, index_col=0, parse_dates=True).iloc[:, 0]
@@ -230,7 +286,7 @@ def cargar_datos(inicio: date | str = "2023-01-01", fin: date | str | None = Non
                     print(f"⚠️  {metrica} no disponible ({e}); el modelo seguirá sin esta variable.")
                 continue
         df[col] = s.reindex(idx.normalize()).values
-    # PorcVoluUtilDiar viene en fracción (0–1) en algunos años; se normaliza a %
+    # PorcVoluUtilDiar viene en fracción (0 a 1) en algunos años; se normaliza a %
     if "vol_util_pct" in df and df["vol_util_pct"].max() <= 1.5:
         df["vol_util_pct"] *= 100
 

@@ -23,7 +23,9 @@ se reparte por igual entre sus vehiculos.
 """
 from __future__ import annotations
 
-from dataclasses import dataclass
+import json
+from dataclasses import asdict, dataclass, field
+from pathlib import Path
 
 import numpy as np
 import pandas as pd
@@ -66,6 +68,41 @@ class GrupoVehiculos:
     def horas_conectado(self, hora_inicio: int) -> list[int]:
         """Posiciones de la ventana (0 a 23) en las que el grupo puede cargar."""
         return list(range(self.indice_llegada(hora_inicio), self.indice_salida(hora_inicio)))
+
+
+@dataclass
+class Flota:
+    """Patio de carga con sus grupos de vehiculos (se lee de config/flota_*.json)."""
+    nombre: str
+    potencia_patio_kw: float
+    grupos: list
+    hora_inicio: int = HORA_INICIO_VENTANA
+    exposicion_bolsa: float = 1.0
+    descripcion: str = ""
+    fuentes: list = field(default_factory=list)
+    supuestos: str = ""
+
+    @classmethod
+    def desde_json(cls, ruta: str | Path) -> "Flota":
+        c = json.loads(Path(ruta).read_text(encoding="utf-8"))
+        return cls(nombre=c["nombre"], potencia_patio_kw=c["potencia_patio_kw"],
+                   grupos=[GrupoVehiculos(**g) for g in c["grupos"]],
+                   hora_inicio=c.get("hora_inicio", HORA_INICIO_VENTANA),
+                   exposicion_bolsa=c.get("exposicion_bolsa", 1.0), descripcion=c.get("descripcion", ""),
+                   fuentes=c.get("fuentes", []), supuestos=c.get("supuestos", ""))
+
+    def tabla(self) -> pd.DataFrame:
+        """Grupos en el formato de la tabla editable de la app."""
+        return grupos_a_tabla(self.grupos)
+
+
+COLUMNAS_TABLA = {"nombre": "Grupo", "cantidad": "Cantidad", "bateria_kwh": "Batería (kWh)",
+                  "cargador_kw": "Cargador (kW)", "hora_llegada": "Llega (hora)", "hora_salida": "Sale (hora)",
+                  "carga_llegada_pct": "Carga al llegar (%)", "carga_salida_pct": "Carga al salir (%)"}
+
+
+def grupos_a_tabla(grupos: list[GrupoVehiculos]) -> pd.DataFrame:
+    return pd.DataFrame([asdict(g) for g in grupos]).rename(columns=COLUMNAS_TABLA)
 
 
 def grupos_desde_tabla(tabla: pd.DataFrame) -> list[GrupoVehiculos]:
@@ -240,12 +277,6 @@ def backtest_flota(real: pd.Series, pred: pd.Series, grupos: list[GrupoVehiculos
 
 
 def grupos_ejemplo() -> pd.DataFrame:
-    """Flota de ejemplo para la tabla editable de la app."""
-    return pd.DataFrame([
-        {"Grupo": "Buses eléctricos", "Cantidad": 10, "Batería (kWh)": 300, "Cargador (kW)": 80,
-         "Llega (hora)": 21, "Sale (hora)": 5, "Carga al llegar (%)": 30, "Carga al salir (%)": 95},
-        {"Grupo": "Furgonetas de reparto", "Cantidad": 15, "Batería (kWh)": 75, "Cargador (kW)": 22,
-         "Llega (hora)": 19, "Sale (hora)": 7, "Carga al llegar (%)": 25, "Carga al salir (%)": 90},
-        {"Grupo": "Montacargas", "Cantidad": 8, "Batería (kWh)": 40, "Cargador (kW)": 10,
-         "Llega (hora)": 18, "Sale (hora)": 6, "Carga al llegar (%)": 20, "Carga al salir (%)": 100},
-    ])
+    """Flota de referencia (patio Fontibon I del SITP) para la tabla editable de la app."""
+    ruta = Path(__file__).resolve().parent.parent / "config" / "flota_fontibon_refugio.json"
+    return Flota.desde_json(ruta).tabla()

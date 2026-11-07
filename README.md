@@ -93,7 +93,3 @@ vuelvan a correrlo: los bloques ya descargados quedan en `data/simem_bloques/`.
   (`exposicion_bolsa`). Un usuario regulado con tarifa plana no ahorra moviendo consumo.
 - **Ahorro estimado vs. real:** el costo del día usa el pronóstico; el ahorro real en backtest planea con el
   pronóstico y paga con el precio real. La cifra de desempeño es la segunda.
-
-
-- **Supuesto de negocio:** el ahorro aplica cuando la empresa paga parte de su energía a precio de bolsa
-  (parámetro `exposicion_bolsa`). Un usuario regulado con tarifa plana no ahorra moviendo cargas.

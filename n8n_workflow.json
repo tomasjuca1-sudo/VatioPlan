@@ -1,0 +1,218 @@
+{
+  "name": "VatioPlan diario (6:00 a. m.), fábrica y flota",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "0 6 * * *"
+            }
+          ]
+        }
+      },
+      "id": "7a0e0c1d-0000-4000-8000-000000000001",
+      "name": "Todos los días 6:00",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        0,
+        100
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.github.com/repos/tomasjuca1-sudo/VatioPlan/actions/workflows/vatioplan_diario.yml/dispatches",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer PEGUE_AQUI_UN_TOKEN_DE_GITHUB"
+            },
+            {
+              "name": "Accept",
+              "value": "application/vnd.github+json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "{\"ref\": \"main\"}",
+        "options": {}
+      },
+      "id": "7a0e0c1d-0000-4000-8000-000000000002",
+      "name": "Lanzar pipeline en GitHub Actions",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        240,
+        100
+      ]
+    },
+    {
+      "parameters": {
+        "amount": 20,
+        "unit": "minutes"
+      },
+      "id": "7a0e0c1d-0000-4000-8000-000000000003",
+      "name": "Esperar a que termine (20 min)",
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        480,
+        100
+      ]
+    },
+    {
+      "parameters": {
+        "url": "https://raw.githubusercontent.com/tomasjuca1-sudo/VatioPlan/main/salidas/fabrica/informe.md",
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "text",
+              "outputPropertyName": "informe"
+            }
+          }
+        }
+      },
+      "id": "7a0e0c1d-0000-4000-8000-000000000004",
+      "name": "Leer informe fábrica",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        720,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "url": "https://raw.githubusercontent.com/tomasjuca1-sudo/VatioPlan/main/salidas/flota/informe.md",
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "text",
+              "outputPropertyName": "informe"
+            }
+          }
+        }
+      },
+      "id": "7a0e0c1d-0000-4000-8000-000000000005",
+      "name": "Leer informe flota",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        720,
+        200
+      ]
+    },
+    {
+      "parameters": {
+        "fromEmail": "vatioplan@su-correo.com",
+        "toEmail": "jefe.planta@empresa.com",
+        "subject": "⚡ VatioPlan: Plan de energía de la planta",
+        "emailFormat": "text",
+        "text": "={{ $json.informe }}",
+        "options": {}
+      },
+      "id": "7a0e0c1d-0000-4000-8000-000000000006",
+      "name": "Enviar al jefe de planta",
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2.1,
+      "position": [
+        960,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "fromEmail": "vatioplan@su-correo.com",
+        "toEmail": "jefe.patio@operador.com",
+        "subject": "⚡ VatioPlan: Plan de carga de la flota",
+        "emailFormat": "text",
+        "text": "={{ $json.informe }}",
+        "options": {}
+      },
+      "id": "7a0e0c1d-0000-4000-8000-000000000007",
+      "name": "Enviar al jefe de patio",
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2.1,
+      "position": [
+        960,
+        200
+      ]
+    }
+  ],
+  "connections": {
+    "Todos los días 6:00": {
+      "main": [
+        [
+          {
+            "node": "Lanzar pipeline en GitHub Actions",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Lanzar pipeline en GitHub Actions": {
+      "main": [
+        [
+          {
+            "node": "Esperar a que termine (20 min)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Esperar a que termine (20 min)": {
+      "main": [
+        [
+          {
+            "node": "Leer informe fábrica",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Leer informe flota",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Leer informe fábrica": {
+      "main": [
+        [
+          {
+            "node": "Enviar al jefe de planta",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Leer informe flota": {
+      "main": [
+        [
+          {
+            "node": "Enviar al jefe de patio",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "timezone": "America/Bogota",
+    "executionOrder": "v1"
+  },
+  "active": false,
+  "meta": {
+    "notas": "Funciona en n8n Cloud y autoalojado: n8n no ejecuta Python, solo lanza GitHub Actions, espera y envía los informes. Cambie el token, el repositorio y los correos; configure credenciales SMTP."
+  }
+}
