@@ -1,0 +1,85 @@
+{
+  "tipo_usuario": "Fábrica manufacturera",
+  "usuario": "Cementos Argos, planta Rioclaro (caso de referencia)",
+  "fuente_datos": "REAL",
+  "plan_de_referencia": "Operación actual",
+  "ventanas_planeadas": 3,
+  "fechas": [
+    "2026-11-08 desde las 00:00",
+    "2026-11-09 desde las 00:00",
+    "2026-11-10 desde las 00:00"
+  ],
+  "costo_referencia_cop": 182341098,
+  "costo_vatioplan_cop": 159749726,
+  "ahorro_cop": 22591372,
+  "ahorro_pct": 12.4,
+  "horario_recomendado_primera_ventana": {
+    "Molino de crudo": "00:00 a 19:00",
+    "Molino de cemento 1": "00:00 a 16:00",
+    "Molino de cemento 2": "00:00 a 16:00",
+    "Molino de carbón": "00:00 a 10:00, 16:00 a 19:00",
+    "Trituradora de caliza": "10:00 a 16:00"
+  },
+  "horas_mas_caras": [
+    "17:00",
+    "18:00",
+    "19:00",
+    "20:00"
+  ],
+  "horas_mas_baratas": [
+    "00:00",
+    "01:00",
+    "09:00",
+    "10:00"
+  ],
+  "precio_max": 1403,
+  "precio_min": 314,
+  "precio_promedio": 543,
+  "mae_modelo": 160,
+  "acierto_horas_baratas": 0.74,
+  "ahorro_real_backtest_pct": 9.6,
+  "ahorro_maximo_backtest_pct": 9.7,
+  "dias_backtest": 90,
+  "exposicion_bolsa": 0.5,
+  "limite_potencia_kw": 21000,
+  "reglas": "todas cumplen",
+  "supuestos": "Argos no publica la potencia de cada equipo. Las potencias se estiman con la capacidad pública y los consumos específicos de la guía ENERGY STAR (Worrell et al., 2013). El horno se modela a plena capacidad (4.000 t/día de clínker) y la molienda de cemento al 75 % de su capacidad (3.200 t/día: 2 molinos de 100 t/h durante 16 h). Con esos niveles el horno produce más clínker del que requiere el cemento molido. No hay fuente pública sobre el destino de ese clínker, así que la diferencia es un supuesto. El molino de crudo procesa 6.680 t/día de harina (1,67 t de materias primas por t de clínker), es decir, 19 h a 360 t/h. La potencia, el caudal y la corrida mínima del molino de crudo, y el límite de compra de 21.000 kW, se toman de la cementera española de Rojas-Innocenti et al. (2025), porque Rioclaro no publica su potencia contratada. La exposición a bolsa (50 %) es un supuesto ajustable.",
+  "comparacion_modelos": [
+    {
+      "Candidato": "GB sobre promedio 4 semanas (modelo principal)",
+      "MAE (COP/kWh)": 160.4,
+      "MAPE (%)": 28.0,
+      "Horas baratas acertadas (%)": 73.9,
+      "Ahorro real en backtest (%)": 9.6
+    },
+    {
+      "Candidato": "Promedio 4 semanas",
+      "MAE (COP/kWh)": 159.9,
+      "MAPE (%)": 27.9,
+      "Horas baratas acertadas (%)": 73.6,
+      "Ahorro real en backtest (%)": 9.6
+    },
+    {
+      "Candidato": "Ingenuo (hace 7 días)",
+      "MAE (COP/kWh)": 144.2,
+      "MAPE (%)": 23.1,
+      "Horas baratas acertadas (%)": 72.8,
+      "Ahorro real en backtest (%)": 9.5
+    },
+    {
+      "Candidato": "GB sobre ingenuo con rezagos (versión anterior)",
+      "MAE (COP/kWh)": 190.7,
+      "MAPE (%)": 29.7,
+      "Horas baratas acertadas (%)": 65.3,
+      "Ahorro real en backtest (%)": 8.5
+    },
+    {
+      "Candidato": "GB precio absoluto, todas las variables (versión original)",
+      "MAE (COP/kWh)": 213.1,
+      "MAPE (%)": 38.1,
+      "Horas baratas acertadas (%)": 61.9,
+      "Ahorro real en backtest (%)": 7.6
+    }
+  ],
+  "proveedor_ia": "plantilla (sin API key)"
+}
