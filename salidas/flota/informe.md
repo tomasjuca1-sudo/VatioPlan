@@ -1,16 +1,16 @@
-### ⚡ Ahorro esperado: $4,689,403 COP (25.1%) en 3 días frente a carga inmediata
+### ⚡ Ahorro esperado: $6,088,424 COP (30.5%) en 3 días frente a carga inmediata
 
 **Patio eléctrico Fontibón I (Refugio), SITP Bogotá (caso de referencia)**. Horario recomendado de carga (primera ventana):
-- **Padrón, turno A**: 00:00 a 04:00
-- **Padrón, turno B**: 00:00 a 04:00
+- **Padrón, turno A**: 23:00 a 03:00
+- **Padrón, turno B**: 23:00 a 03:00
 - **Busetón, turno A**: 00:00 a 03:00
 - **Busetón, turno B**: 00:00 a 03:00
 
-**Evitar:** 17:00, 18:00, 19:00, 20:00 (hasta 1,403 COP/kWh). **Aprovechar:** 00:00, 01:00, 08:00, 09:00 (desde 314 COP/kWh).
+**Evitar:** 17:00, 18:00, 19:00, 20:00 (hasta 1,404 COP/kWh). **Aprovechar:** 00:00, 01:00, 08:00, 09:00 (desde 243 COP/kWh).
 
 **Confianza y supuestos:**
-- Ahorro real en backtest: 18.0% (máximo posible 19.1%, 89 días con precio real).
-- El pronóstico identifica 74% de las horas baratas (error medio 163 COP/kWh).
+- Ahorro real en backtest: 18.3% (máximo posible 19.4%, 89 días con precio real).
+- El pronóstico identifica 73% de las horas baratas (error medio 163 COP/kWh).
 - Exposición a precio de bolsa: 50%.
 - Límite de potencia: 8,400 kW.
 - Reglas de ingeniería: todas cumplen.
