@@ -1,8 +1,8 @@
-### ⚡ Ahorro esperado: $6,088,424 COP (30.5%) en 3 días frente a carga inmediata
+### ⚡ Ahorro esperado: $7,160,878 COP (35.2%) en 3 días frente a carga inmediata
 
 **Patio eléctrico Fontibón I (Refugio), SITP Bogotá (caso de referencia)**. Horario recomendado de carga (primera ventana):
-- **Padrón, turno A**: 23:00 a 03:00
-- **Padrón, turno B**: 23:00 a 03:00
+- **Padrón, turno A**: 00:00 a 04:00
+- **Padrón, turno B**: 00:00 a 04:00
 - **Busetón, turno A**: 00:00 a 03:00
 - **Busetón, turno B**: 00:00 a 03:00
 

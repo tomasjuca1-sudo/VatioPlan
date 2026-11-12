@@ -5,17 +5,17 @@
   "plan_de_referencia": "Carga inmediata",
   "ventanas_planeadas": 3,
   "fechas": [
-    "2026-11-11 desde las 12:00",
     "2026-11-12 desde las 12:00",
-    "2026-11-13 desde las 12:00"
+    "2026-11-13 desde las 12:00",
+    "2026-11-14 desde las 12:00"
   ],
-  "costo_referencia_cop": 19958255,
-  "costo_vatioplan_cop": 13869831,
-  "ahorro_cop": 6088424,
-  "ahorro_pct": 30.5,
+  "costo_referencia_cop": 20353997,
+  "costo_vatioplan_cop": 13193119,
+  "ahorro_cop": 7160878,
+  "ahorro_pct": 35.2,
   "horario_recomendado_primera_ventana": {
-    "Padrón, turno A": "23:00 a 03:00",
-    "Padrón, turno B": "23:00 a 03:00",
+    "Padrón, turno A": "00:00 a 04:00",
+    "Padrón, turno B": "00:00 a 04:00",
     "Busetón, turno A": "00:00 a 03:00",
     "Busetón, turno B": "00:00 a 03:00"
   },

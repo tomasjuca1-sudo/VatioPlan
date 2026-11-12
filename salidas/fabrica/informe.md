@@ -1,4 +1,4 @@
-### ⚡ Ahorro esperado: $32,438,292 COP (15.9%) en 3 días frente a operación actual
+### ⚡ Ahorro esperado: $33,976,974 COP (16.5%) en 3 días frente a operación actual
 
 **Cementos Argos, planta Rioclaro (caso de referencia)**. Horario recomendado de operación (primera ventana):
 - **Molino de crudo**: 00:00 a 19:00
