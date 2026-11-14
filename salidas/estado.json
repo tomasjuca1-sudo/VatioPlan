@@ -1,32 +1,32 @@
 {
   "fuente": "REAL",
-  "ultimo_dato": "2026-11-10 23:00",
+  "ultimo_dato": "2026-11-11 23:00",
   "fechas_planeadas": [
-    "2026-11-13",
     "2026-11-14",
-    "2026-11-15"
+    "2026-11-15",
+    "2026-11-16"
   ],
   "metricas_modelo": {
-    "periodo_prueba": "2026-08-13 a 2026-11-10",
-    "horas_entrenamiento": 31512,
+    "periodo_prueba": "2026-08-14 a 2026-11-11",
+    "horas_entrenamiento": 31536,
     "horas_prueba": 2160,
-    "mae_modelo": 163.25509547553997,
-    "mae_base": 145.09314462962962,
-    "mape_modelo": 31.286086110096573,
-    "mape_base": 24.527775254643007,
-    "acierto_horas_baratas_modelo": 0.7277777777777777,
-    "acierto_horas_baratas_base": 0.7402777777777778,
-    "mejora_mae_pct": -12.517442427946035
+    "mae_modelo": 163.52861751420448,
+    "mae_base": 146.33193120370373,
+    "mape_modelo": 31.450829244023176,
+    "mape_base": 24.70062727293317,
+    "acierto_horas_baratas_modelo": 0.7361111111111112,
+    "acierto_horas_baratas_base": 0.7458333333333333,
+    "mejora_mae_pct": -11.751834455435306
   },
   "perfiles": {
     "fabrica": {
       "usuario": "Cementos Argos, planta Rioclaro (caso de referencia)",
-      "ahorro_real_backtest_pct": 10.3,
+      "ahorro_real_backtest_pct": 10.6,
       "reglas": "todas cumplen"
     },
     "flota": {
       "usuario": "Patio eléctrico Fontibón I (Refugio), SITP Bogotá (caso de referencia)",
-      "ahorro_real_backtest_pct": 19.1,
+      "ahorro_real_backtest_pct": 19.4,
       "reglas": "todas cumplen"
     }
   }
