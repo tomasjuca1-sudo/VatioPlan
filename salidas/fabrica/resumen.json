@@ -5,14 +5,14 @@
   "plan_de_referencia": "Operación actual",
   "ventanas_planeadas": 3,
   "fechas": [
-    "2026-11-17 desde las 00:00",
     "2026-11-18 desde las 00:00",
-    "2026-11-19 desde las 00:00"
+    "2026-11-19 desde las 00:00",
+    "2026-11-20 desde las 00:00"
   ],
-  "costo_referencia_cop": 184388236,
-  "costo_vatioplan_cop": 151772734,
-  "ahorro_cop": 32615502,
-  "ahorro_pct": 17.7,
+  "costo_referencia_cop": 186780544,
+  "costo_vatioplan_cop": 153019929,
+  "ahorro_cop": 33760615,
+  "ahorro_pct": 18.1,
   "horario_recomendado_primera_ventana": {
     "Molino de crudo": "00:00 a 19:00",
     "Molino de cemento 1": "00:00 a 16:00",
@@ -32,13 +32,13 @@
     "08:00",
     "09:00"
   ],
-  "precio_max": 1399,
-  "precio_min": 226,
-  "precio_promedio": 454,
-  "mae_modelo": 164,
-  "acierto_horas_baratas": 0.73,
-  "ahorro_real_backtest_pct": 11.2,
-  "ahorro_maximo_backtest_pct": 11.3,
+  "precio_max": 1401,
+  "precio_min": 222,
+  "precio_promedio": 453,
+  "mae_modelo": 162,
+  "acierto_horas_baratas": 0.74,
+  "ahorro_real_backtest_pct": 11.5,
+  "ahorro_maximo_backtest_pct": 11.5,
   "dias_backtest": 90,
   "exposicion_bolsa": 0.5,
   "limite_potencia_kw": 21000,
@@ -47,38 +47,38 @@
   "comparacion_modelos": [
     {
       "Candidato": "GB sobre promedio 4 semanas (modelo principal)",
-      "MAE (COP/kWh)": 163.6,
-      "MAPE (%)": 32.4,
-      "Horas baratas acertadas (%)": 73.5,
-      "Ahorro real en backtest (%)": 11.2
+      "MAE (COP/kWh)": 162.4,
+      "MAPE (%)": 32.3,
+      "Horas baratas acertadas (%)": 74.4,
+      "Ahorro real en backtest (%)": 11.5
     },
     {
       "Candidato": "Promedio 4 semanas",
-      "MAE (COP/kWh)": 162.3,
+      "MAE (COP/kWh)": 161.4,
       "MAPE (%)": 32.1,
-      "Horas baratas acertadas (%)": 73.2,
-      "Ahorro real en backtest (%)": 11.2
+      "Horas baratas acertadas (%)": 73.6,
+      "Ahorro real en backtest (%)": 11.4
     },
     {
       "Candidato": "Ingenuo (hace 7 días)",
-      "MAE (COP/kWh)": 147.6,
-      "MAPE (%)": 25.1,
-      "Horas baratas acertadas (%)": 74.3,
-      "Ahorro real en backtest (%)": 11.0
+      "MAE (COP/kWh)": 148.6,
+      "MAPE (%)": 25.5,
+      "Horas baratas acertadas (%)": 74.9,
+      "Ahorro real en backtest (%)": 11.2
     },
     {
       "Candidato": "GB precio absoluto, todas las variables (versión original)",
-      "MAE (COP/kWh)": 218.7,
-      "MAPE (%)": 43.1,
-      "Horas baratas acertadas (%)": 64.4,
-      "Ahorro real en backtest (%)": 10.2
+      "MAE (COP/kWh)": 216.4,
+      "MAPE (%)": 43.4,
+      "Horas baratas acertadas (%)": 64.7,
+      "Ahorro real en backtest (%)": 10.4
     },
     {
       "Candidato": "GB sobre ingenuo con rezagos (versión anterior)",
-      "MAE (COP/kWh)": 196.8,
-      "MAPE (%)": 35.0,
-      "Horas baratas acertadas (%)": 66.5,
-      "Ahorro real en backtest (%)": 9.6
+      "MAE (COP/kWh)": 193.4,
+      "MAPE (%)": 34.6,
+      "Horas baratas acertadas (%)": 66.9,
+      "Ahorro real en backtest (%)": 9.9
     }
   ],
   "proveedor_ia": "plantilla (sin API key)"
