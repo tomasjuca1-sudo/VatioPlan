@@ -1,22 +1,22 @@
 {
   "fuente": "REAL",
-  "ultimo_dato": "2026-11-18 23:00",
+  "ultimo_dato": "2026-11-19 23:00",
   "fechas_planeadas": [
-    "2026-11-21",
     "2026-11-22",
-    "2026-11-23"
+    "2026-11-23",
+    "2026-11-24"
   ],
   "metricas_modelo": {
-    "periodo_prueba": "2026-08-21 a 2026-11-18",
-    "horas_entrenamiento": 31704,
+    "periodo_prueba": "2026-08-22 a 2026-11-19",
+    "horas_entrenamiento": 31728,
     "horas_prueba": 2160,
-    "mae_modelo": 165.5517527268095,
-    "mae_base": 152.45159324074075,
-    "mape_modelo": 32.51388645858915,
-    "mape_base": 25.907874057043774,
-    "acierto_horas_baratas_modelo": 0.7416666666666667,
-    "acierto_horas_baratas_base": 0.7458333333333333,
-    "mejora_mae_pct": -8.592996116073316
+    "mae_modelo": 166.63525452733145,
+    "mae_base": 154.1904776851852,
+    "mape_modelo": 32.616815066146266,
+    "mape_base": 26.08674977051763,
+    "acierto_horas_baratas_modelo": 0.7472222222222222,
+    "acierto_horas_baratas_base": 0.7486111111111111,
+    "mejora_mae_pct": -8.071041110304567
   },
   "perfiles": {
     "fabrica": {
@@ -26,7 +26,7 @@
     },
     "flota": {
       "usuario": "Patio eléctrico Fontibón I (Refugio), SITP Bogotá (caso de referencia)",
-      "ahorro_real_backtest_pct": 21.2,
+      "ahorro_real_backtest_pct": 21.9,
       "reglas": "todas cumplen"
     }
   }
