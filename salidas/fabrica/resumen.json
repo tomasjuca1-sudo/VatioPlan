@@ -5,14 +5,14 @@
   "plan_de_referencia": "Operación actual",
   "ventanas_planeadas": 3,
   "fechas": [
-    "2026-11-25 desde las 00:00",
     "2026-11-26 desde las 00:00",
-    "2026-11-27 desde las 00:00"
+    "2026-11-27 desde las 00:00",
+    "2026-11-28 desde las 00:00"
   ],
-  "costo_referencia_cop": 201675260,
-  "costo_vatioplan_cop": 164077702,
-  "ahorro_cop": 37597558,
-  "ahorro_pct": 18.6,
+  "costo_referencia_cop": 187461663,
+  "costo_vatioplan_cop": 158418837,
+  "ahorro_cop": 29042827,
+  "ahorro_pct": 15.5,
   "horario_recomendado_primera_ventana": {
     "Molino de crudo": "00:00 a 19:00",
     "Molino de cemento 1": "00:00 a 16:00",
