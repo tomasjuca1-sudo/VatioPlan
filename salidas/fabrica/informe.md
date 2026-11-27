@@ -1,4 +1,4 @@
-### ⚡ Ahorro esperado: $29,042,827 COP (15.5%) en 3 días frente a operación actual
+### ⚡ Ahorro esperado: $24,837,243 COP (14.8%) en 3 días frente a operación actual
 
 **Cementos Argos, planta Rioclaro (caso de referencia)**. Horario recomendado de operación (primera ventana):
 - **Molino de crudo**: 00:00 a 19:00
@@ -7,11 +7,11 @@
 - **Molino de carbón**: 00:00 a 10:00, 21:00 a 00:00
 - **Trituradora de caliza**: 10:00 a 16:00
 
-**Evitar:** 17:00, 18:00, 19:00, 20:00 (hasta 1,450 COP/kWh). **Aprovechar:** 00:00, 01:00, 09:00, 10:00 (desde 258 COP/kWh).
+**Evitar:** 17:00, 18:00, 19:00, 20:00 (hasta 1,441 COP/kWh). **Aprovechar:** 00:00, 01:00, 09:00, 10:00 (desde 257 COP/kWh).
 
 **Confianza y supuestos:**
-- Ahorro real en backtest: 12.6% (máximo posible 12.7%, 90 días con precio real).
-- El pronóstico identifica 75% de las horas baratas (error medio 170 COP/kWh).
+- Ahorro real en backtest: 13.3% (máximo posible 13.3%, 90 días con precio real).
+- El pronóstico identifica 75% de las horas baratas (error medio 173 COP/kWh).
 - Exposición a precio de bolsa: 50%.
 - Límite de potencia: 21,000 kW.
 - Reglas de ingeniería: todas cumplen.
